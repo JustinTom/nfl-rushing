@@ -44,10 +44,6 @@
       no-results-text='No results found.'
       no-data-text="No data retrieved."
     >
-      <!-- Anchor links for each player's NFL profile. -->
-      <template v-slot:item.Player='{ item }'>
-        <a v-bind:href='generateNFLPlayerURL(item.Player)' target='_blank'>{{ item.Player }}</a>
-      </template>
 
       <!-- Tool tip clarity on header names. -->
       <template v-for='h in headers' v-slot:[`header.${h.value}`]='{ header }'>
@@ -57,6 +53,22 @@
           </template>
           <span>{{header.tooltip}}</span>
         </v-tooltip>
+      </template>
+
+      <!-- Anchor links for each player's NFL profile. -->
+      <template v-slot:item.Player='{ item }'>
+        <a v-bind:href='generateNFLPlayerURL(item.Player)' target='_blank'>{{ item.Player }}</a>
+      </template>
+
+      <!-- Visual rating indicators for certain stat categories. -->
+      <template v-slot:item.Yds='{ item }'>
+        <v-chip :color='getRatingColor(item.Yds, totalRushingYardsMax)'> {{ item.Yds }}</v-chip>
+      </template>
+      <template v-slot:item.Lng='{ item }'>
+        <v-chip :color='getRatingColor(item.Lng, longestRushMax)'> {{ item.Lng }}</v-chip>
+      </template>
+      <template v-slot:item.TD='{ item }'>
+        <v-chip :color='getRatingColor(item.TD, totalRushingTouchdownsMax)'> {{ item.TD }}</v-chip>
       </template>
 
     </v-data-table>
@@ -171,6 +183,11 @@ export default {
       .get('http://localhost:8001/players')
       .then((response) => { this.players = response.data; });
   },
+  beforeUpdate() {
+    this.totalRushingYardsMax = this.getHighestStatValue(this.players, 'Yds');
+    this.longestRushMax = this.getHighestStatValue(this.players, 'Lng');
+    this.totalRushingTouchdownsMax = this.getHighestStatValue(this.players, 'TD');
+  },
   methods: {
     startDownload() {
       this.downloadBtnLoadingFlag = true;
@@ -181,6 +198,50 @@ export default {
     },
     generateNFLPlayerURL(name) {
       return `https://nfl.com/players/${name.toLowerCase().replaceAll(' ', '-')}`;
+    },
+    sanitizeLongestRushValue(lngValue) {
+      if (typeof lngValue === 'string' && lngValue.includes('T')) {
+        // In the case of longest rush, convert it to an int and
+        // add 10 yards to compensate for a touchdown.
+        return Number(lngValue.toString().replace('T', '')) + 10;
+      }
+      return lngValue;
+    },
+    // Calculate and set the max values for stats.
+    getHighestStatValue(playerData, stat) {
+      // Create a deep copy of the array in order to manipulate outlier values
+      // such as Lng's 'touchdown' strings. Since simply assigning 'playerData'
+      // to another variable makes it reference the same object in memory.
+      const sanitizedPlayerData = JSON.parse(JSON.stringify(playerData));
+
+      if (stat === 'Lng') {
+        Object.keys(sanitizedPlayerData).forEach((player) => {
+          Object.keys(sanitizedPlayerData[player]).forEach((playerStat) => {
+            if (playerStat === 'Lng') {
+              sanitizedPlayerData[player][playerStat] = this.sanitizeLongestRushValue(
+                playerData[player][playerStat],
+              );
+            }
+          });
+        });
+      }
+
+      return Math.max(...sanitizedPlayerData.map((player) => player[stat]), 0);
+    },
+    getRatingColor(currValue, highestValue) {
+      const sanitizedValue = this.sanitizeLongestRushValue(currValue);
+      const score = sanitizedValue / highestValue;
+
+      if (score < 0.25) {
+        return 'red';
+      }
+      if (score < 0.5) {
+        return 'orange';
+      }
+      if (score < 0.75) {
+        return 'amber';
+      }
+      return 'green';
     },
   },
 };
