@@ -1,11 +1,44 @@
 <template>
   <v-card>
+    <v-card-title>
+      <!-- Search field -->
+      <v-text-field
+        v-model='search'
+        append-icon='mdi-magnify'
+        label='Player Search'
+        type='text'
+      ></v-text-field>
+
+      <v-spacer></v-spacer>
+
+      <!-- Download button exporting the filtered data to a CSV file -->
+      <download-excel
+        :data='filteredPlayers'
+        type='csv'
+        name='playerData.csv'
+        :escapeCsv=false
+        :before-generate='startDownload'
+        :before-finish='cleanUpDownload'
+      >
+        <v-btn
+          color='#0078fd'
+          fab
+          :loading='downloadBtnLoadingFlag'
+          :disabled='downloadBtnLoadingFlag'
+        >
+        <v-icon>mdi-download</v-icon>
+      </v-btn>
+      </download-excel>
+    </v-card-title>
+
     <v-data-table
       :headers='headers'
       :items='players'
+      :search='search'
       :footer-props="{
         'items-per-page-options': [25, 50, 75, 100, -1]
       }"
+      ref='statsTable'
       class='elevation-1'
       loading=true
       no-results-text='No results found.'
@@ -98,6 +131,9 @@ export default {
         },
       ],
       players: [],
+      filteredPlayers: [],
+      search: '',
+      downloadBtnLoadingFlag: false,
     };
   },
   created() {
@@ -106,6 +142,13 @@ export default {
       .then((response) => { this.players = response.data; });
   },
   methods: {
+    startDownload() {
+      this.downloadBtnLoadingFlag = true;
+      this.filteredPlayers = this.$refs.statsTable.$children[0].filteredItems;
+    },
+    cleanUpDownload() {
+      this.downloadBtnLoadingFlag = false;
+    },
   },
 };
 </script>
