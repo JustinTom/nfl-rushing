@@ -1,22 +1,23 @@
 <template>
   <div>
     <app-header></app-header>
-    <h1 class="text-center">NFL Rushing</h1>
+
+    <h1 class="text-center my-5">NFL Rushing</h1>
 
     <v-divider></v-divider>
 
-    <dataTable></dataTable>
+    <data-table></data-table>
   </div>
 </template>
 
 <script>
-import dataTable from '../components/dataTable.vue';
-import header from '../components/header.vue';
+import dataTable from '@/components/dataTable.vue';
+import header from '@/components/header.vue';
 
 export default {
   name: 'Home',
   components: {
-    dataTable,
+    'data-table': dataTable,
     'app-header': header,
   },
 };
