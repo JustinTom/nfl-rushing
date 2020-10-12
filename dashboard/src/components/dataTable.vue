@@ -44,6 +44,21 @@
       no-results-text='No results found.'
       no-data-text="No data retrieved."
     >
+      <!-- Anchor links for each player's NFL profile. -->
+      <template v-slot:item.Player='{ item }'>
+        <a v-bind:href='generateNFLPlayerURL(item.Player)' target='_blank'>{{ item.Player }}</a>
+      </template>
+
+      <!-- Tool tip clarity on header names. -->
+      <template v-for='h in headers' v-slot:[`header.${h.value}`]='{ header }'>
+        <v-tooltip bottom v-bind:key='h.id'>
+          <template v-slot:activator="{ on }">
+            <span v-on="on">{{header.text}}</span>
+          </template>
+          <span>{{header.tooltip}}</span>
+        </v-tooltip>
+      </template>
+
     </v-data-table>
   </v-card>
 </template>
@@ -58,76 +73,91 @@ export default {
         {
           text: 'Name',
           value: 'Player',
+          tooltip: 'Player\'s name',
         },
         {
           text: 'Team',
           filterable: false,
           value: 'Team',
+          tooltip: 'Player\'s team abbreviation',
         },
         {
           text: 'Position',
           filterable: false,
           value: 'Pos',
+          tooltip: 'Player\'s position',
         },
         {
           text: 'Att',
           filterable: false,
           value: 'Att',
+          tooltip: 'Rushing attempts',
         },
         {
           text: 'Avg Att',
           filterable: false,
           value: 'Att/G',
+          tooltip: 'Rushing attempts per game average',
         },
         {
           text: 'Yds',
           filterable: false,
           value: 'Yds',
+          tooltip: 'Total rushing yards',
         },
         {
           text: 'Avg Yds',
           filterable: false,
           value: 'Avg',
+          tooltip: 'Rushing average yards per attempt',
         },
         {
           text: 'Yds/G',
           filterable: false,
           value: 'Yds/G',
+          tooltip: 'Rushing yards per game',
         },
         {
           text: 'TD',
           filterable: false,
           value: 'TD',
+          tooltip: 'Total rushing touchdowns',
         },
         {
           text: 'Lng',
           filterable: false,
           value: 'Lng',
+          tooltip: 'Longest rush (a \'T\' represents a touchdown occured)',
         },
         {
           text: 'Rush 1st',
           filterable: false,
           value: '1st',
+          tooltip: 'Rushing first downs',
         },
         {
           text: 'Rush 1st%',
           filterable: false,
           value: '1st%',
+          tooltip: 'Rushing first down percentage',
         },
         {
           text: '20+',
           filterable: false,
           value: '20+',
+          tooltip: 'Rushing 20+ yards each',
         },
         {
           text: '40+',
           filterable: false,
           value: '40+',
+          tooltip: 'Rushing 40+ yards each',
         },
         {
           text: 'Rush FUM',
           filterable: false,
           value: 'FUM',
+          tooltip: 'Rushing fumbles',
         },
       ],
       players: [],
@@ -148,6 +178,9 @@ export default {
     },
     cleanUpDownload() {
       this.downloadBtnLoadingFlag = false;
+    },
+    generateNFLPlayerURL(name) {
+      return `https://nfl.com/players/${name.toLowerCase().replaceAll(' ', '-')}`;
     },
   },
 };
