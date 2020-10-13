@@ -54,4 +54,28 @@ We will evaluate you on your ability to solve the problem defined in the require
 If you have any questions regarding requirements, do not hesitate to email your contact at theScore for clarification.
 
 ### Installation and running this solution
-... TODO
+This web application uses [Python 3](https://www.python.org/downloads/) for the backend service and [VueJS v2](https://vuejs.org/v2/guide/installation.html) as the frontend framework.
+
+#### Prerequisites
+- The web application uses [Docker](https://docs.docker.com/engine/install/) and [Docker Compose](https://docs.docker.com/compose/install/) to containerize and run the images as individual services.
+
+#### Set up
+1. Ensure you are in the root directory of the project.
+2. Build both backend and frontend applications into containers using the provided  bash script - `sh build_docker_images.sh`
+3. Start both applications through Docker Compose - `docker-compose up` or `docker-compose up -d` to run it in detached mode.
+4. Navigate to your [localhost on port 8080](http://localhost:8080/) to view the dashboard.
+
+### Miscellaneous
+
+#### Assumptions
+- The backend Python service currently only hosts a GET request endpoint which returns the JSON data from the `rushing.json` file within the request payload. In an actual production environment, I would assume that the route would instead be pulling the data from a database server. However, for the sake of simplicity for this assignment, I did not set up a database and load the JSON data into a table.
+- I have admittedly made some changes to the original data set. These changes involved updating some of the "Yds" values from string to integer types. I believe this situation occured when the "Yds" value met or exceeded `1000`, which then added a comma (`1,000`) and converted it into a string. I updated those values >1000 by removing the comma and converting it back into an int. I have made the assumption that in a production level environment, the data should have been validated and sanitized before being stored into the database.
+
+
+#### Notes
+- The current logic for the frontend is to call the API endpoint and load the entire dataset into memory. This has been tested to work well at the current scope of 326 players as well as a scaled up 10K players. However, if we were expecting to deal with a larger dataset, say in the hundreds of thousands in the future, I would update the logic of the API call to return the data in chunks and set up serverside pagination for the data so the frontend does not have to load huge amounts of data into memory.
+- Though I used Gunicorn to replace Flask's built in HTTP server and installed Node's `http-server` package and are a step better than a development setup, neither has been completely optimized for production level usage.
+
+
+
+
