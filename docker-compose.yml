@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+    backend-service:
+        image: nfl-rushing-backend:latest
+        ports:
+            - 8001:8001
+    dashboard:
+        image: nfl-rushing-frontend:latest
+        ports:
+            - 8080:8080 
